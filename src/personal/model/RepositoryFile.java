@@ -3,8 +3,7 @@ package personal.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RepositoryFile implements Repository {
-    private UserMapper mapper = new UserMapper();
+public class RepositoryFile implements Repository, UserMapper {
     private FileOperation fileOperation;
 
     public RepositoryFile(FileOperation fileOperation) {
@@ -16,7 +15,7 @@ public class RepositoryFile implements Repository {
         List<String> lines = fileOperation.readAllLines();
         List<User> users = new ArrayList<>();
         for (String line : lines) {
-            users.add(mapper.map(line));
+            users.add(map(line));
         }
         return users;
     }
@@ -44,7 +43,7 @@ public class RepositoryFile implements Repository {
     private List<String> mapToString(List<User> users) {
         List<String> lines = new ArrayList<>();
         for (User item: users) {
-            lines.add(mapper.map(item));
+            lines.add(map(item));
         }
         return lines;
     }
@@ -61,5 +60,28 @@ public class RepositoryFile implements Repository {
         }
         fileOperation.saveAllLines(mapToString(users));
         return user;
+    }
+
+    @Override
+    public User deleteUser(User user) {
+        List<User> users = getAllUsers();
+        for (int i = 0; i < users.size(); i++) {
+            if(users.get(i).getId().equals(user.getId()))  {
+               users.remove(users.get(i));
+            }
+        }
+        fileOperation.saveAllLines(mapToString(users));
+        return user;
+    }
+
+    @Override
+    public String map(User user) {
+        return String.format("%s,%s,%s,%s", user.getId(), user.getFirstName(), user.getLastName(), user.getPhone());
+    }
+
+    @Override
+    public User map(String line) {
+        String[] lines = line.split(",");
+        return new User(lines[0], lines[1], lines[2], lines[3]);
     }
 }
